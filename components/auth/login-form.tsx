@@ -28,6 +28,8 @@ export const LoginForm = () => {
     secret: "",
     user: { email: "" },
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const router = useRouter();
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -39,6 +41,7 @@ export const LoginForm = () => {
   });
 
   const onSubmitLogin = async (values: z.infer<typeof LoginSchema>) => {
+    setIsSubmitting(true);
     try {
       const user = await loginUser(values);
       if (user.enable2FA) {
@@ -56,27 +59,36 @@ export const LoginForm = () => {
           onClick: () => {},
         },
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const onSubmitVerify = async (values: z.infer<typeof LoginSchema>) => {
-    const isValidated = await verify2Fa({
-      email: verify.user.email,
-      token: values.token,
-      secret: verify.secret,
-    });
-
-    if (isValidated !== null) {
-      localStorage.setItem("userData", JSON.stringify(verify.user));
-      router.push("/dashboard");
-    } else {
-      toast("Error!", {
-        description: "Invalid two-factor code.",
-        action: {
-          label: "Close",
-          onClick: () => {},
-        },
+    setIsSubmitting(true);
+    try {
+      const isValidated = await verify2Fa({
+        email: verify.user.email,
+        token: values.token,
+        secret: verify.secret,
       });
+
+      if (isValidated !== null) {
+        localStorage.setItem("userData", JSON.stringify(verify.user));
+        router.push("/dashboard");
+      } else {
+        toast("Error!", {
+          description: "Invalid two-factor code.",
+          action: {
+            label: "Close",
+            onClick: () => {},
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -159,7 +171,7 @@ export const LoginForm = () => {
           </div>
           <FormError message="" />
           <FormSuccess message="" />
-          <Button type="submit" className="w-full">
+          <Button disabled={isSubmitting} type="submit" className="w-full">
             {verify.isVerify ? "Verify code" : "Login"}
           </Button>
         </form>

@@ -79,9 +79,9 @@ export async function enable2FA(userData: {
   pin: string;
   password: string;
 }) {
-  const { email, secret, pin, password } = userData;
   try {
     connectToDatabase();
+    const { email, secret, pin, password } = userData;
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -110,6 +110,11 @@ export async function enable2FA(userData: {
         { twoFASecret: secret, enable2FA: true },
         { new: true }
       );
+      return {
+        ...JSON.parse(JSON.stringify(user)),
+        twoFASecret: secret,
+        enable2FA: true,
+      };
     } else {
       throw new Error("Invalid two-factor code.");
     }

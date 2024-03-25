@@ -19,9 +19,12 @@ import { FormSuccess } from "../form-success";
 import { createUser } from "@/lib/actions/user.action";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export const RegisterForm = () => {
   const router = useRouter();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -32,6 +35,7 @@ export const RegisterForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
+    setIsSubmitting(true);
     try {
       await createUser(values);
       router.push("/auth/login");
@@ -43,6 +47,8 @@ export const RegisterForm = () => {
           onClick: () => console.log("Undo"),
         },
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -93,8 +99,8 @@ export const RegisterForm = () => {
           </div>
           <FormError message="" />
           <FormSuccess message="" />
-          <Button type="submit" className="w-full">
-            Register
+          <Button disabled={isSubmitting} type="submit" className="w-full">
+            {isSubmitting ? "Creating" : "Register"}
           </Button>
         </form>
       </Form>

@@ -19,6 +19,7 @@ import { FormSuccess } from "../form-success";
 import { useRouter } from "next/navigation";
 import { enable2FA } from "@/lib/actions/user.action";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface Enable2faFormProps {
   email: string;
@@ -26,6 +27,7 @@ interface Enable2faFormProps {
 }
 
 export const Enable2faForm = ({ email, secret }: Enable2faFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const form = useForm<z.infer<typeof twoFaSchema>>({
     resolver: zodResolver(twoFaSchema),
@@ -36,17 +38,21 @@ export const Enable2faForm = ({ email, secret }: Enable2faFormProps) => {
   });
 
   const onSubmit = async (values: z.infer<typeof twoFaSchema>) => {
+    setIsSubmitting(true);
     try {
-      await enable2FA({ email, ...values, secret });
+      const user = await enable2FA({ email, ...values, secret });
+      localStorage.setItem("userData", JSON.stringify({ ...user, _id: "1" }));
       router.push("/dashboard");
     } catch (error: any) {
       toast("Error!", {
-        description: error.message,
+        description: "invalid code or password",
         action: {
           label: "Close",
           onClick: () => {},
         },
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -89,7 +95,9 @@ export const Enable2faForm = ({ email, secret }: Enable2faFormProps) => {
         </div>
         <FormError message="" />
         <FormSuccess message="" />
-        <Button type="submit">Register with two-factor app</Button>
+        <Button disabled={isSubmitting} type="submit">
+          Register with two-factor app
+        </Button>
       </form>
     </Form>
   );
