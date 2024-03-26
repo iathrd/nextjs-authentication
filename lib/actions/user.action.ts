@@ -124,6 +124,20 @@ export async function enable2FA(userData: {
   }
 }
 
+export async function disable2FA({ email }: { email: string }) {
+  try {
+    connectToDatabase();
+    await User.findOneAndUpdate(
+      { email },
+      { enable2FA: false, twoFASecret: null },
+      { new: true }
+    );
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
 export async function generateCode({ email }: { email: string }) {
   const buffer = crypto.randomBytes(15);
   const base32 = encode(buffer).replace(/=/g, "").substring(0, 24);

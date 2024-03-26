@@ -42,7 +42,7 @@ const Enable2FAPage = () => {
               application on your phone.
             </p>
             <p className="font-semibold mt-5">
-              Account: simklinik.com/{user.email}
+              Account: simklinik.com:{user.email}
             </p>
             <p className="font-semibold">Key: {data.secret}</p>
             <p className="font-semibold">Time based: Yes</p>
