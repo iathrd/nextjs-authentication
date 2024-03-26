@@ -8,7 +8,6 @@ import React, { useLayoutEffect, useState } from "react";
 
 const DasboardPage = () => {
   const router = useRouter();
-  const pathname = usePathname();
 
   const [user, setUser] = useState({ email: "", enable2FA: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +29,7 @@ const DasboardPage = () => {
           twoFASecret: null,
         })
       );
+      setUser((prev) => ({ ...prev, enable2FA: false, twoFASecret: "" }));
     } catch (error) {
       console.log(error);
       throw error;
